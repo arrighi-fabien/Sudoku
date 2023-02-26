@@ -1,9 +1,12 @@
+var sudoku;
+var sudoku_copy;
+var width;
+
 function beginGame() {
   // prompt to change the difficulty
   let difficulty = prompt("Please enter the difficulty (easy, medium)");
   // check if the difficulty is valid
   if (difficulty === "easy" || difficulty === "medium") {
-    let width = 0;
     switch (difficulty) {
       case "easy":
         // create a 4x4 sudoku
@@ -26,8 +29,11 @@ function createTable(width) {
   let table = document.createElement("table");
   for (let i = 0; i < width; i++) {
     let row = document.createElement("tr");
+    // add class to the tr element
+    row.classList.add("sudoku-row-" + width + "x" + width);
     for (let j = 0; j < width; j++) {
       let cell = document.createElement("td");
+      cell.classList.add("sudoku-cell-" + width + "x" + width);
       // create an input field for each cell with pattern 1-9
       cell.innerHTML = "<input type='text' id='input" + i + j + "' maxlength='1' size='1' pattern='[1-9]' />";
       row.appendChild(cell);
@@ -37,7 +43,7 @@ function createTable(width) {
   document.body.appendChild(table);
   createSudoku(width);
 }
-var sudoku;
+
 function createSudoku(width) {
   //generate an array for the sudoku
   sudoku = new Array(width);
@@ -102,7 +108,7 @@ function createSudoku(width) {
   }
 
   //create a copy of the array sudoku and remove some numbers
-  let sudoku_copy = [];
+  sudoku_copy = [];
   for (let i = 0; i < width; i++) {
     sudoku_copy[i] = [...sudoku[i]];
   }
@@ -143,8 +149,13 @@ document.querySelectorAll("input").forEach(item => {
   item.addEventListener("input", event => {
     // get the id of the input field
     let id = event.target.id;
+    // check if the value is a number with regex with value between 1 and width value
+    let regex = new RegExp("^[1-" + width + "]$");
+    if (!event.target.value.match(regex)) {
+      event.target.value = "";
+    }
     // check if the value is valid
-    checkSudoku(sudoku, id);
+    checkSudoku(sudoku_copy, id);
   });
 });
 
@@ -156,6 +167,15 @@ function checkSudoku(sudoku, id) {
   let column = parseInt(id.slice(6));
   // get the value of the input field
   let value = parseInt(document.getElementById(id).value);
+  // add the value to the sudoku array
+  // if value is NaN
+  if (value !== value) {
+    value = 0;
+    sudoku[row][column] = value;
+    document.getElementById(id).style.backgroundColor = "white";
+    return;
+  }
+  sudoku[row][column] = value;
   // check if the value is in the row
   let row_error = false;
   for (let i = 0; i < sudoku.length; i++) {
@@ -187,7 +207,7 @@ function checkSudoku(sudoku, id) {
   }
   // if there is an error, change the color of the input field
   if (row_error || column_error || square_error) {
-    document.getElementById(id).style.backgroundColor = "red";
+    document.getElementById(id).style.backgroundColor = "#FF5858";
   }
   else {
     document.getElementById(id).style.backgroundColor = "white";
